@@ -31,10 +31,7 @@ async function run() {
     app.get('/toys', async(req,res)=>{
         
         const category = req.query.category;
-        console.log(category);
-        
         let query = {subcategoryName: category};
-        
         const cursor = toysCollection.find(query);
         const result = await cursor.toArray();
         res.send(result)
