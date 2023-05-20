@@ -37,7 +37,17 @@ async function run() {
         res.send(result)
     })
 
+    app.post('/addToy', async(req, res) =>{
+      const body = req.body;
+      console.log(body);
+      // if(!body){
+      //   return res.status(400).send({message: "Invalid argument "})
+      // }
 
+      const result = await toysCollection.insertOne(body);
+      console.log(result);
+      res.send(result)
+    })
 
 
 
