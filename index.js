@@ -3,7 +3,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 require('dotenv').config();
 const app = express();
-const port = process.env. PORT || 5000;
+const port = process.env.PORT || 5000;
 
 //middleware
 app.use(cors())
@@ -28,24 +28,48 @@ async function run() {
 
     const toysCollection = client.db('toyMarket').collection('toys');
 
-    app.get('/toys', async(req,res)=>{
-        
-        const category = req.query.category;
-        let query = {subcategoryName: category};
-        const cursor = toysCollection.find(query);
-        const result = await cursor.toArray();
-        res.send(result)
+    const indexKeys = { toyName: 1 };
+    const indexOptions = { name: "toyName" }
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    console.log(result);
+
+    app.get('/toySearchByName/:text', async (req, res) => {
+      const searchText = req.params.text;
+
+      const result = await toysCollection.find({
+        toyName: { $regex: searchText, $options: 'i' },
+
+
+      }).toArray()
+      res.send(result)
     })
 
-    app.post('/addToy', async(req, res) =>{
+
+    app.get('/toys', async (req, res) => {
+
+      const category = req.query.category;
+      let query = { subcategoryName: category };
+      const cursor = toysCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result)
+    })
+
+    app.post('/addToy', async (req, res) => {
       const body = req.body;
-      console.log(body);
-      // if(!body){
-      //   return res.status(400).send({message: "Invalid argument "})
-      // }
+
 
       const result = await toysCollection.insertOne(body);
-      console.log(result);
+      res.send(result)
+    })
+
+    app.get('/allToys', async (req, res) => {
+      const limit = parseInt(req.query.limit) || 20;
+      const result = await toysCollection.find({}).limit(limit).toArray();
+      res.send(result);
+    })
+
+    app.get('/myToys/:email', async (req, res) => {
+      const result = await toysCollection.find({ sellerEmail: req.params.email }).toArray();
       res.send(result)
     })
 
@@ -63,10 +87,10 @@ run().catch(console.dir);
 
 
 
-app.get('/', (req, res) =>{
-    res.send("Toy market is running")
+app.get('/', (req, res) => {
+  res.send("Toy market is running")
 })
 
-app.listen(port, () =>{
-    console.log(`Toy marketplace is running on port: ${port}`);
+app.listen(port, () => {
+  console.log(`Toy marketplace is running on port: ${port}`);
 })
