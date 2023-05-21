@@ -68,7 +68,9 @@ async function run() {
 
     app.get('/allToys', async (req, res) => {
       const limit = parseInt(req.query.limit) || 20;
-      const result = await toysCollection.find({}).limit(limit).toArray();
+      const searchTxt = req.query.toyName;
+    
+      const result = await toysCollection.find({toyName: {$regex: searchTxt, $options: "i"}}).limit(limit).toArray();
       res.send(result);
     })
     app.get('/myToys', async (req, res) => {
@@ -78,7 +80,9 @@ async function run() {
     })
 
     app.get('/myToys/:email', async (req, res) => {
-      const result = await toysCollection.find({ sellerEmail: req.params.email }).toArray();
+      const sortValue = Number(req.query.sort)
+      
+      const result = await toysCollection.find({ sellerEmail: req.params.email }).sort({price: sortValue}).toArray();
       res.send(result)
     })
 
